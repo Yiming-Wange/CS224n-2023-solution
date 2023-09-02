@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-CS224N 2021-22: Homework 4
+CS224N 2022-23: Homework 4
 run.py: Run Script for Simple NMT Model
 Pencheng Yin <pcyin@cs.cmu.edu>
 Sahil Chopra <schopra8@stanford.edu>
 Vera Lin <veralin@stanford.edu>
+Siyan Li <siyanli@stanford.edu>
 
 Usage:
     run.py train --train-src=<file> --train-tgt=<file> --dev-src=<file> --dev-tgt=<file> --vocab=<file> [options]
@@ -116,7 +117,7 @@ def train(args: Dict):
     """ Train the NMT Model.
     @param args (Dict): args from cmd line
     """
-    train_data_src = read_corpus(args['--train-src'], source='src', vocab_size=21000)       
+    train_data_src = read_corpus(args['--train-src'], source='src', vocab_size=21000)       # EDIT: NEW VOCAB SIZE
     train_data_tgt = read_corpus(args['--train-tgt'], source='tgt', vocab_size=8000)
 
     dev_data_src = read_corpus(args['--dev-src'], source='src', vocab_size=3000)
@@ -133,13 +134,13 @@ def train(args: Dict):
 
     vocab = Vocab.load(args['--vocab'])
 
-    # model = NMT(embed_size=int(args['--embed-size']),                                 
+    # model = NMT(embed_size=int(args['--embed-size']),                                 # EDIT: 4X EMBED AND HIDDEN SIZES 
     #             hidden_size=int(args['--hidden-size']),
     #             dropout_rate=float(args['--dropout']),
     #             vocab=vocab)
 
     model = NMT(embed_size=1024,
-                hidden_size=1024,
+                hidden_size=768,
                 dropout_rate=float(args['--dropout']),
                 vocab=vocab)
     
@@ -162,6 +163,7 @@ def train(args: Dict):
     model = model.to(device)
 
     optimizer = torch.optim.Adam(model.parameters(), lr=float(args['--lr']))
+    # optimizer = torch.optim.Adam(model.parameters(), lr=5e-5)                       # EDIT: SMALLER LEARNING RATE
 
     num_trial = 0
     train_iter = patience = cum_loss = report_loss = cum_tgt_words = report_tgt_words = 0
@@ -300,7 +302,7 @@ def decode(args: Dict[str, str]):
         model = model.to(torch.device("cuda:0"))
 
     hypotheses = beam_search(model, test_data_src,
-                            #  beam_size=int(args['--beam-size']),                      
+                            #  beam_size=int(args['--beam-size']),                      EDIT: BEAM SIZE USED TO BE 5
                              beam_size=10,
                              max_decoding_time_step=int(args['--max-decoding-time-step']))
 

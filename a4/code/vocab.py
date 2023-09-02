@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-CS224N 2021-22: Homework 4
+CS224N 2022-23: Homework 4
 vocab.py: Vocabulary Generation
 Pencheng Yin <pcyin@cs.cmu.edu>
 Sahil Chopra <schopra8@stanford.edu>
 Vera Lin <veralin@stanford.edu>
+Siyan Li <siyanli@stanford.edu>
 
 Usage:
     vocab.py --train-src=<file> --train-tgt=<file> [options] VOCAB_FILE
@@ -174,11 +175,14 @@ class Vocab(object):
         @param src_sents (list[str]): Source subwords provided by SentencePiece
         @param tgt_sents (list[str]): Target subwords provided by SentencePiece
         """
+        # assert len(src_sents) == len(tgt_sents)
 
         print('initialize source vocabulary ..')
+        # src = VocabEntry.from_corpus(src_sents, vocab_size, freq_cutoff)
         src = VocabEntry.from_subword_list(src_sents)
 
         print('initialize target vocabulary ..')
+        # tgt = VocabEntry.from_corpus(tgt_sents, vocab_size, freq_cutoff)
         tgt = VocabEntry.from_subword_list(tgt_sents)
 
         return Vocab(src, tgt)
@@ -215,10 +219,10 @@ def get_vocab_list(file_path, source, vocab_size):
     @param source (str): tgt or src
     @param vocab_size: desired vocabulary size
     """ 
-    spm.SentencePieceTrainer.train(input=file_path, model_prefix=source, vocab_size=vocab_size)     # train the spm model
-    sp = spm.SentencePieceProcessor()                                                               # create an instance; this saves .model and .vocab files 
-    sp.load('{}.model'.format(source))                                                              # loads tgt.model or src.model
-    sp_list = [sp.id_to_piece(piece_id) for piece_id in range(sp.get_piece_size())]                 # this is the list of subwords
+    spm.SentencePieceTrainer.Train(input=file_path, model_prefix=source, vocab_size=vocab_size)     # train the spm model
+    sp = spm.SentencePieceProcessor()   # create an instance; this saves .model and .vocab files 
+    sp.Load('{}.model'.format(source))  # loads tgt.model or src.model
+    sp_list = [sp.IdToPiece(piece_id) for piece_id in range(sp.GetPieceSize())] # this is the list of subwords
     return sp_list 
 
 
@@ -229,10 +233,16 @@ if __name__ == '__main__':
     print('read in source sentences: %s' % args['--train-src'])
     print('read in target sentences: %s' % args['--train-tgt'])
 
-    src_sents = get_vocab_list(args['--train-src'], source='src', vocab_size=21000)         
+    src_sents = get_vocab_list(args['--train-src'], source='src', vocab_size=21000)          # EDIT: NEW VOCAB SIZE
     tgt_sents = get_vocab_list(args['--train-tgt'], source='tgt', vocab_size=8000)
     vocab = Vocab.build(src_sents, tgt_sents)
     print('generated vocabulary, source %d words, target %d words' % (len(src_sents), len(tgt_sents)))
+
+    # src_sents = read_corpus(args['--train-src'], source='src')
+    # tgt_sents = read_corpus(args['--train-tgt'], source='tgt')
+
+    # vocab = Vocab.build(src_sents, tgt_sents, int(args['--size']), int(args['--freq-cutoff']))
+    # print('generated vocabulary, source %d words, target %d words' % (len(vocab.src), len(vocab.tgt)))
 
     vocab.save(args['VOCAB_FILE'])
     print('vocabulary saved to %s' % args['VOCAB_FILE'])

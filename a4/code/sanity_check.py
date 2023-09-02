@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 
 """
-CS224N 2021-22: Homework 4
+CS224N 2022-23: Homework 4
 sanity_check.py: Sanity Checks for Assignment 4
 Sahil Chopra <schopra8@stanford.edu>
 Michael Hahn <>
 Vera Lin <veralin@stanford.edu>
+Siyan Li <siyanli@stanford.edu>
 
 If you are a student, please don't run overwrite_output_for_sanity_check as it will overwrite the correct output!
 
@@ -23,7 +24,7 @@ import numpy as np
 from docopt import docopt
 from utils import batch_iter
 import nltk
-# from utils import read_corpus
+from utils import autograder_read_corpus
 from vocab import Vocab, VocabEntry
 
 from nmt_model import NMT
@@ -51,6 +52,8 @@ def reinitialize_layers(model):
                 m.bias.data.fill_(0.1)
         elif type(m) == nn.Embedding:
             m.weight.data.fill_(0.15)
+        elif type(m) == nn.Conv1d:
+            m.weight.data.fill_(0.15)
         elif type(m) == nn.Dropout:
             nn.Dropout(DROPOUT_RATE)
         elif type(m) == nn.LSTM:
@@ -59,7 +62,6 @@ def reinitialize_layers(model):
         elif type(m) == nn.LSTMCell:
             for param in m.state_dict():
                 getattr(m, param).data.fill_(0.1)
-        
     with torch.no_grad():
         model.apply(init_weights)
 
@@ -218,22 +220,6 @@ def question_1f_sanity_check(model, src_sents, tgt_sents, vocab):
     print ("-"*80)
 
 
-def sanity_read_corpus(file_path, source):
-    """ Read file, where each sentence is dilineated by a `\n`.
-    @param file_path (str): path to file containing corpus
-    @param source (str): "tgt" or "src" indicating whether text
-        is of the source language or target language
-    """
-    data = []
-    for line in open(file_path):
-        sent = nltk.word_tokenize(line)
-        # only append <s> and </s> to the target sentence
-        if source == 'tgt':
-            sent = ['<s>'] + sent + ['</s>']
-        data.append(sent)
-
-    return data
-
 
 def main():
     """ Main func.
@@ -242,7 +228,7 @@ def main():
 
     # Check Python & PyTorch Versions
     assert (sys.version_info >= (3, 5)), "Please update your installation of Python to version >= 3.5."
-    assert(torch.__version__ >= "1.6.0"), "Please update your installation of PyTorch to version >= 1.6.0. You have version {}.".format(torch.__version__)
+    assert(torch.__version__ >= "1.6.0"), "Please update your installation of PyTorch >= 1.6.0. You have version {}.".format(torch.__version__)
 
     # Seed the Random Number Generators
     seed = 1234
@@ -251,8 +237,8 @@ def main():
     np.random.seed(seed * 13 // 7)
 
     # Load training data & vocabulary
-    train_data_src = sanity_read_corpus('./sanity_check_en_es_data/train_sanity_check.es', 'src')
-    train_data_tgt = sanity_read_corpus('./sanity_check_en_es_data/train_sanity_check.en', 'tgt')
+    train_data_src = autograder_read_corpus('./sanity_check_en_es_data/train_sanity_check.es', 'src')
+    train_data_tgt = autograder_read_corpus('./sanity_check_en_es_data/train_sanity_check.en', 'tgt')
     train_data = list(zip(train_data_src, train_data_tgt))
 
     for src_sents, tgt_sents in batch_iter(train_data, batch_size=BATCH_SIZE, shuffle=True):
